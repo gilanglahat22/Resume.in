@@ -1,0 +1,99 @@
+# Go backend
+/backend/bin/
+/backend/pkg/
+/backend/*.exe
+/backend/*.exe~
+/backend/*.dll
+/backend/*.so
+/backend/*.dylib
+/backend/*.test
+/backend/*.out
+/backend/go.work
+/backend/vendor/
+/backend/tmp/
+
+# Angular frontend
+/client/dist/
+/client/node_modules/
+/client/.pnp/
+/client/.pnp.js
+/client/coverage/
+/client/.angular/cache/
+/client/.sass-cache/
+/client/connect.lock
+/client/libpeerconnection.log
+/client/npm-debug.log
+/client/yarn-error.log
+/client/testem.log
+/client/typings/
+/client/.env
+/client/.env.local
+/client/.env.development.local
+/client/.env.test.local
+/client/.env.production.local
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# Docker
+.docker/
+docker-compose.override.yml
+docker-volumes/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+/postgres-data/
+/postgres-initdb/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build and package files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Miscellaneous
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+/temp/
+/tmp/ 

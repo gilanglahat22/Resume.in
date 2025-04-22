@@ -1,0 +1,65 @@
+# Git files
+.git
+.gitignore
+.github/
+
+# Docker files
+.dockerignore
+docker-compose.yml
+docker-compose.override.yml
+docker-compose.*.yml
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+
+# Node.js - Frontend (client)
+**/node_modules
+**/npm-debug.log
+**/yarn-debug.log
+**/yarn-error.log
+**/dist
+**/.angular/cache
+**/.env*
+**/.pnp
+**/.pnp.js
+**/coverage
+**/.nyc_output
+**/e2e/*.js
+**/e2e/*.map
+
+# Go - Backend
+**/bin
+**/pkg
+**/vendor
+**/*.exe
+**/*.exe~
+**/*.dll
+**/*.so
+**/*.dylib
+**/*.test
+**/*.out
+**/go.work
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Database volumes
+postgres-data/
+postgres-initdb/
+
+# Scripts
+start.sh
+stop.sh
+start.bat
+stop.bat
+
+# Logs
+logs/
+*.log 

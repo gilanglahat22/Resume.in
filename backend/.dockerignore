@@ -1,0 +1,37 @@
+# Git files
+.git
+.gitignore
+
+# Go specific
+bin/
+pkg/
+vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.*
+
+# Temporary and log files
+tmp/
+temp/
+*.log
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE 
