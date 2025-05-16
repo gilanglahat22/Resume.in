@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   postgres:
-    image: postgres:14-alpine
+    image: pgvector/pgvector:pg14
     container_name: resume-postgres
     restart: always
     ports:
@@ -15,26 +13,35 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - resume-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resumeuser -d resumedb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_api_key}
     container_name: resume-backend
     restart: always
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
       SERVER_PORT: 8080
       ENVIRONMENT: development
-      ALLOW_ORIGINS: "http://localhost:4200"
+      ALLOW_ORIGINS: "http://localhost:3000"
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_USER: resumeuser
       POSTGRES_PASSWORD: resumepassword
       POSTGRES_DB: resumedb
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-your_openai_api_key}
     networks:
       - resume-network
 
@@ -45,7 +52,7 @@ services:
     container_name: resume-frontend
     restart: always
     ports:
-      - "4200:80"
+      - "3000:80"
     depends_on:
       - backend
     networks:

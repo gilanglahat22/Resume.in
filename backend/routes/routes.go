@@ -7,7 +7,7 @@ import (
 )
 
 // SetupRouter configures all routes for the application
-func SetupRouter(resumeController *controllers.ResumeController) *gin.Engine {
+func SetupRouter(resumeController *controllers.ResumeController, chatbotController *controllers.ChatbotController) *gin.Engine {
 	router := gin.Default()
 	
 	// Apply CORS middleware
@@ -38,6 +38,14 @@ func SetupRouter(resumeController *controllers.ResumeController) *gin.Engine {
 		
 		// Experience endpoint
 		api.GET("/experience", resumeController.GetAllExperience)
+		
+		// Chatbot endpoints
+		chatRoutes := api.Group("/chat")
+		{
+			chatRoutes.POST("/message", chatbotController.SendMessage)
+			chatRoutes.GET("/history/:sessionId", chatbotController.GetChatHistory)
+			chatRoutes.POST("/document", chatbotController.UploadDocument)
+		}
 	}
 
 	return router

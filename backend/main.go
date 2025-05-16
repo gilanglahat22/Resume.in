@@ -21,6 +21,7 @@ func main() {
 
 	// Connect to database with retry
 	var resumeRepo models.ResumeRepository
+	var chatbotRepo models.ChatbotRepository
 	var maxRetries = 5
 	var retryDelay = 5 * time.Second
 
@@ -33,7 +34,7 @@ func main() {
 			continue
 		}
 
-		// Setup PostgreSQL repository
+		// Setup PostgreSQL repository for resume
 		postgresRepo, err := models.NewPostgresResumeRepository(db)
 		if err != nil {
 			utils.Error("Failed to initialize database repository: %v", err)
@@ -46,6 +47,18 @@ func main() {
 		}
 
 		resumeRepo = postgresRepo
+
+		// Setup PostgreSQL repository for chatbot
+		// Use simplified implementation to avoid LangChain dependency issues
+		chatbotRepo, err := models.NewPostgresChatbotRepository(db)
+		if err != nil {
+			utils.Error("Failed to initialize chatbot repository: %v", err)
+			// Continue with other features
+		} else {
+			chatbotRepo = chatbotRepo
+			utils.Info("Chatbot repository initialized")
+		}
+
 		break
 	}
 
@@ -59,11 +72,20 @@ func main() {
 		resumeRepo = memoryRepo
 	}
 
-	// Initialize controller
+	// Initialize controllers
 	resumeController := controllers.NewResumeController(resumeRepo)
+	
+	// Initialize chatbot controller if repository is available
+	var chatbotController *controllers.ChatbotController
+	if chatbotRepo != nil {
+		chatbotController = controllers.NewChatbotController(chatbotRepo)
+		utils.Info("Chatbot controller initialized")
+	} else {
+		utils.Warning("Chatbot features will be disabled")
+	}
 
 	// Setup router
-	router := routes.SetupRouter(resumeController)
+	router := routes.SetupRouter(resumeController, chatbotController)
 
 	// Start server
 	serverAddr := fmt.Sprintf(":%d", cfg.ServerPort)

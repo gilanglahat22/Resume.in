@@ -3,7 +3,9 @@ package config
 import (
 	"database/sql"
 	"fmt"
+	"net"
 	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 	"resume.in/backend/utils"
@@ -35,23 +37,54 @@ func GetDBConfig() *DBConfig {
 func ConnectDB() (*sql.DB, error) {
 	dbConfig := GetDBConfig()
 
+	// Try to resolve the database host first to check network connectivity
+	// This can help diagnose DNS issues in Docker networks
+	_, err := net.LookupHost(dbConfig.Host)
+	if err != nil {
+		utils.Error("DNS lookup for database host '%s' failed: %v", dbConfig.Host, err)
+		return nil, fmt.Errorf("DNS lookup for database host '%s' failed: %w", dbConfig.Host, err)
+	}
+
 	connStr := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s connect_timeout=10",
 		dbConfig.Host, dbConfig.Port, dbConfig.User, dbConfig.Password, dbConfig.DBName, dbConfig.SSLMode,
 	)
 
+	utils.Info("Attempting to connect to database at %s:%s", dbConfig.Host, dbConfig.Port)
+	
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.Ping()
+	// Set reasonable connection pool settings
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	
+	// Ping with timeout
+	err = ping(db, 10*time.Second)
 	if err != nil {
 		return nil, err
 	}
 
-	utils.Info("Connected to PostgreSQL database")
+	utils.Info("Successfully connected to PostgreSQL database at %s:%s", dbConfig.Host, dbConfig.Port)
 	return db, nil
+}
+
+// ping attempts to ping the database with a timeout
+func ping(db *sql.DB, timeout time.Duration) error {
+	errc := make(chan error, 1)
+	go func() {
+		errc <- db.Ping()
+	}()
+
+	select {
+	case err := <-errc:
+		return err
+	case <-time.After(timeout):
+		return fmt.Errorf("database ping timed out after %v", timeout)
+	}
 }
 
 // getEnv gets an environment variable or returns a default value

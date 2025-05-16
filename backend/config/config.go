@@ -11,6 +11,7 @@ type Config struct {
 	Environment      string
 	AllowOrigins     string
 	LogLevel         string
+	OpenAIAPIKey     string
 }
 
 // NewConfig creates and returns a new Config with default values
@@ -20,6 +21,7 @@ func NewConfig() *Config {
 		Environment:      "development",
 		AllowOrigins:     "*",
 		LogLevel:         "debug",
+		OpenAIAPIKey:     "",
 	}
 }
 
@@ -47,6 +49,11 @@ func LoadConfigFromEnv() *Config {
 	// Log level
 	if logLevel := os.Getenv("LOG_LEVEL"); logLevel != "" {
 		config.LogLevel = logLevel
+	}
+	
+	// OpenAI API key
+	if apiKey := os.Getenv("OPENAI_API_KEY"); apiKey != "" {
+		config.OpenAIAPIKey = apiKey
 	}
 	
 	return config
