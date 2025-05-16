@@ -24,7 +24,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       args:
-        - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_api_key}
+        - OPEN_ROUTER_API_KEY=${OPEN_ROUTER_API_KEY:-your_openrouter_api_key}
     container_name: resume-backend
     restart: always
     depends_on:
@@ -41,7 +41,8 @@ services:
       POSTGRES_USER: resumeuser
       POSTGRES_PASSWORD: resumepassword
       POSTGRES_DB: resumedb
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-your_openai_api_key}
+      OPEN_ROUTER_API_KEY: ${OPEN_ROUTER_API_KEY:-your_openrouter_api_key}
+      OPEN_ROUTER_MODEL: ${OPEN_ROUTER_MODEL:-anthropic/claude-3-opus:beta}
     networks:
       - resume-network
 

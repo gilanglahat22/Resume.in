@@ -1,15 +1,15 @@
 # Resume.in Chatbot Backend
 
-This is the backend for Resume.in application with chatbot capability powered by LLM.
+This is the backend for Resume.in application with chatbot capability powered by LLM through Open Router.
 
 ## System Design
 
 The chatbot system follows this design:
 
 1. User sends a query to the backend
-2. The query is embedded using OpenAI embeddings
+2. The query is processed and stored with a simple embedding
 3. The embedding is used to search for relevant documents in a vector database (PostgreSQL with pgvector)
-4. Retrieved documents along with the query are sent to an LLM (OpenAI) for processing
+4. Retrieved documents along with the query are sent to an LLM (via Open Router) for processing
 5. The LLM generates a response which is sent back to the user
 
 ## Setup
@@ -18,7 +18,7 @@ The chatbot system follows this design:
 
 - Go 1.18 or higher
 - PostgreSQL with pgvector extension
-- OpenAI API key
+- Open Router API key (sign up at https://openrouter.ai)
 
 ### Environment Variables
 
@@ -26,18 +26,32 @@ Create a `.env` file with the following variables:
 
 ```
 # Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=password
-DB_NAME=resume_db
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=resumeuser
+POSTGRES_PASSWORD=resumepassword
+POSTGRES_DB=resumedb
+POSTGRES_SSLMODE=disable
 
 # Server Configuration
 SERVER_PORT=8080
+ENVIRONMENT=development
+ALLOW_ORIGINS=http://localhost:3000
+LOG_LEVEL=debug
 
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key
+# Open Router Configuration
+OPEN_ROUTER_API_KEY=your_openrouter_api_key
+OPEN_ROUTER_MODEL=anthropic/claude-3-sonnet:beta
 ```
+
+Available Open Router models include:
+- `anthropic/claude-3-opus:beta` - Highest capability Claude model
+- `anthropic/claude-3-sonnet:beta` - Great balance of intelligence and speed
+- `anthropic/claude-3-haiku:beta` - Fastest and most cost-effective Claude model
+- `meta-llama/llama-3-70b-instruct` - Meta's most capable open model
+- `mistralai/mistral-large-latest` - Mistral's most capable model
+
+See the [Open Router models page](https://openrouter.ai/models) for a complete list of available models.
 
 ### Installation
 
@@ -48,16 +62,18 @@ OPENAI_API_KEY=your_openai_api_key
    ```
    go mod download
    ```
-3. Run the application:
+3. Create a `.env` file in the `backend` directory with the environment variables listed above
+4. Run the application:
    ```
    go run main.go
    ```
 
 #### Docker Setup
 
-1. Create a `.env` file in the root directory with:
+1. Create a `.env` file in the root directory with at least these variables:
    ```
-   OPENAI_API_KEY=your_openai_api_key
+   OPEN_ROUTER_API_KEY=your_openrouter_api_key
+   OPEN_ROUTER_MODEL=anthropic/claude-3-sonnet:beta
    ```
 
 2. Build and start the containers:
@@ -67,7 +83,6 @@ OPENAI_API_KEY=your_openai_api_key
 
 3. The services will be available at:
    - Backend: http://localhost:8080
-   - Frontend: http://localhost:3000
 
 4. To stop the containers:
    ```
@@ -147,5 +162,4 @@ The backend uses the following components:
 
 - **Gin**: Web framework for REST API
 - **PostgreSQL with pgvector**: Vector database for storing and searching embeddings
-- **LangChain (Go)**: Framework for working with LLMs
-- **OpenAI**: For generating embeddings and LLM responses 
+- **Open Router**: API gateway for accessing various LLM models 

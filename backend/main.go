@@ -16,6 +16,12 @@ func main() {
 	// Initialize loggers
 	utils.InitLoggers()
 
+	// Load environment variables from .env file
+	if err := utils.LoadEnv(); err != nil {
+		utils.Error("Failed to load environment variables: %v", err)
+		// Continue anyway, as we may have environment variables set directly
+	}
+
 	// Load configuration
 	cfg := config.LoadConfigFromEnv()
 

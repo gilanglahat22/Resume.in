@@ -15,15 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/pgvector/pgvector-go"
-	
-	// Skip LangChain imports in test mode
-	// "github.com/tmc/langchaingo/chains"
-	// "github.com/tmc/langchaingo/embeddings"
-	// "github.com/tmc/langchaingo/embeddings/openai"
-	// "github.com/tmc/langchaingo/llms"
-	// "github.com/tmc/langchaingo/llms/openai"
-	// "github.com/tmc/langchaingo/prompts"
-	// "github.com/tmc/langchaingo/schema"
 )
 
 // dummyFunc is to avoid go compiler complaining about unused imports
