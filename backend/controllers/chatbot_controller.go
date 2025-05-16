@@ -27,6 +27,16 @@ func NewChatbotController(chatbotRepo models.ChatbotRepository) *ChatbotControll
 }
 
 // SendMessage handles the chat API endpoint
+// @Summary Send a message to the chatbot
+// @Description Send a message to the chatbot and get a response
+// @Tags chatbot
+// @Accept json
+// @Produce json
+// @Param request body ChatRequest true "Chat request"
+// @Success 200 {object} docs.ChatResponse
+// @Failure 400 {object} docs.ErrorResponse
+// @Failure 500 {object} docs.ErrorResponse
+// @Router /chat/message [post]
 func (c *ChatbotController) SendMessage(ctx *gin.Context) {
 	var request ChatRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
@@ -55,6 +65,16 @@ func (c *ChatbotController) SendMessage(ctx *gin.Context) {
 }
 
 // GetChatHistory retrieves the chat history for a session
+// @Summary Get chat history
+// @Description Get the chat history for a specific session
+// @Tags chatbot
+// @Accept json
+// @Produce json
+// @Param sessionId path string true "Session ID"
+// @Success 200 {object} docs.ChatHistoryResponse
+// @Failure 400 {object} docs.ErrorResponse
+// @Failure 500 {object} docs.ErrorResponse
+// @Router /chat/history/{sessionId} [get]
 func (c *ChatbotController) GetChatHistory(ctx *gin.Context) {
 	sessionID := ctx.Param("sessionId")
 	if sessionID == "" {
@@ -83,6 +103,16 @@ type UploadDocumentRequest struct {
 }
 
 // UploadDocument handles uploading a document to the vector store
+// @Summary Upload a document
+// @Description Upload a document to the vector store for context retrieval
+// @Tags chatbot
+// @Accept json
+// @Produce json
+// @Param request body UploadDocumentRequest true "Document upload request"
+// @Success 200 {object} docs.DocumentResponse
+// @Failure 400 {object} docs.ErrorResponse
+// @Failure 500 {object} docs.ErrorResponse
+// @Router /chat/document [post]
 func (c *ChatbotController) UploadDocument(ctx *gin.Context) {
 	var request UploadDocumentRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {

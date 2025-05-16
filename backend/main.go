@@ -5,12 +5,25 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"resume.in/backend/config"
 	"resume.in/backend/controllers"
+	_ "resume.in/backend/docs" // Import generated docs
 	"resume.in/backend/models"
 	"resume.in/backend/routes"
 	"resume.in/backend/utils"
 )
+
+// @title Resume.in API
+// @version 1.0
+// @description API Server for Resume.in application with chatbot capabilities
+
+// @host localhost:8080
+// @BasePath /api
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 
 func main() {
 	// Initialize loggers
@@ -24,6 +37,11 @@ func main() {
 
 	// Load configuration
 	cfg := config.LoadConfigFromEnv()
+
+	// Set Gin mode based on environment
+	if cfg.Environment == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	// Connect to database with retry
 	var resumeRepo models.ResumeRepository
@@ -92,6 +110,9 @@ func main() {
 
 	// Setup router
 	router := routes.SetupRouter(resumeController, chatbotController)
+
+	// Remove the Swagger setup from here as it's now in routes.go
+	utils.Info("Swagger UI available at http://localhost:%d/swagger/index.html", cfg.ServerPort)
 
 	// Start server
 	serverAddr := fmt.Sprintf(":%d", cfg.ServerPort)
