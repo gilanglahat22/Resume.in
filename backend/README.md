@@ -89,6 +89,35 @@ See the [Open Router models page](https://openrouter.ai/models) for a complete l
    docker-compose down
    ```
 
+## API Documentation
+
+The API is documented using Swagger/OpenAPI. You can access the interactive API documentation at:
+
+```
+http://localhost:8080/swagger/index.html
+```
+
+This provides a user-friendly interface for:
+- Viewing all available API endpoints
+- Understanding request/response formats
+- Testing API endpoints directly from the browser
+- Getting detailed information about API parameters and response codes
+
+### Generating Swagger Documentation
+
+If you make changes to the API, you'll need to regenerate the Swagger documentation:
+
+1. Install swag CLI tool:
+   ```
+   go install github.com/swaggo/swag/cmd/swag@latest
+   ```
+   
+2. Generate the docs:
+   ```
+   cd backend
+   swag init
+   ```
+
 ## API Endpoints
 
 ### Chatbot
@@ -162,4 +191,5 @@ The backend uses the following components:
 
 - **Gin**: Web framework for REST API
 - **PostgreSQL with pgvector**: Vector database for storing and searching embeddings
-- **Open Router**: API gateway for accessing various LLM models 
+- **Open Router**: API gateway for accessing various LLM models
+- **Swagger/OpenAPI**: API documentation 
