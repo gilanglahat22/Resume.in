@@ -11,7 +11,8 @@ type Config struct {
 	Environment      string
 	AllowOrigins     string
 	LogLevel         string
-	OpenAIAPIKey     string
+	OpenRouterAPIKey string
+	OpenRouterModel  string
 }
 
 // NewConfig creates and returns a new Config with default values
@@ -21,7 +22,8 @@ func NewConfig() *Config {
 		Environment:      "development",
 		AllowOrigins:     "*",
 		LogLevel:         "debug",
-		OpenAIAPIKey:     "",
+		OpenRouterAPIKey: "",
+		OpenRouterModel:  "anthropic/claude-3-opus:beta", // Default to a powerful model
 	}
 }
 
@@ -51,9 +53,14 @@ func LoadConfigFromEnv() *Config {
 		config.LogLevel = logLevel
 	}
 	
-	// OpenAI API key
-	if apiKey := os.Getenv("OPENAI_API_KEY"); apiKey != "" {
-		config.OpenAIAPIKey = apiKey
+	// Open Router API key
+	if apiKey := os.Getenv("OPEN_ROUTER_API_KEY"); apiKey != "" {
+		config.OpenRouterAPIKey = apiKey
+	}
+	
+	// Open Router model
+	if model := os.Getenv("OPEN_ROUTER_MODEL"); model != "" {
+		config.OpenRouterModel = model
 	}
 	
 	return config
