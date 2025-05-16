@@ -1,4 +1,4 @@
-FROM node:16-alpine AS builder
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
@@ -8,23 +8,30 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy the source code
+# Copy the rest of the application code
 COPY . .
 
-# Build the application
+# Build the application for production
 RUN npm run build -- --configuration production
+
+# Check the build output directory structure
+RUN ls -la /app/dist
 
 # Use Nginx to serve the application
 FROM nginx:1.21-alpine
 
-# Copy the build output from the builder stage
-COPY --from=builder /app/dist/resume-client /usr/share/nginx/html
+# Remove default nginx website
+RUN rm -rf /usr/share/nginx/html/*
 
-# Copy custom Nginx config
+# Copy the Angular app build from the builder stage
+# For Angular Universal apps, we need the browser directory
+COPY --from=builder /app/dist/client/browser /usr/share/nginx/html
+
+# Copy our custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
 
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"] 
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]

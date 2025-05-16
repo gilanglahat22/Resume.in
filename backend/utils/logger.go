@@ -12,6 +12,8 @@ var (
 	ErrorLogger *log.Logger
 	// DebugLogger for debug logs
 	DebugLogger *log.Logger
+	// WarningLogger for warning logs
+	WarningLogger *log.Logger
 )
 
 // InitLoggers initializes the logger instances
@@ -19,6 +21,7 @@ func InitLoggers() {
 	InfoLogger = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	ErrorLogger = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 	DebugLogger = log.New(os.Stdout, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
+	WarningLogger = log.New(os.Stdout, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 // Info logs an informational message
@@ -34,4 +37,9 @@ func Error(format string, v ...interface{}) {
 // Debug logs a debug message
 func Debug(format string, v ...interface{}) {
 	DebugLogger.Printf(format, v...)
+}
+
+// Warning logs a warning message
+func Warning(format string, v ...interface{}) {
+	WarningLogger.Printf(format, v...)
 } 

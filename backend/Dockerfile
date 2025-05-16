@@ -1,16 +1,18 @@
-FROM golang:1.18-alpine AS builder
+FROM golang:1.18 AS builder
 
 WORKDIR /app
 
-# Copy go.mod and go.sum files
+# Copy go mod file first
 COPY go.mod ./
-COPY go.sum ./
 
-# Download dependencies
+# Initialize go modules
 RUN go mod download
 
-# Copy the source code
+# Copy the rest of the source code
 COPY . .
+
+# Run go mod tidy to ensure dependencies are correct
+RUN go mod tidy
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
