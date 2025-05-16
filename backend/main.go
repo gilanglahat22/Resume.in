@@ -56,12 +56,12 @@ func main() {
 
 		// Setup PostgreSQL repository for chatbot
 		// Use simplified implementation to avoid LangChain dependency issues
-		chatbotRepo, err := models.NewPostgresChatbotRepository(db)
+		repo, err := models.NewPostgresChatbotRepository(db)
 		if err != nil {
 			utils.Error("Failed to initialize chatbot repository: %v", err)
 			// Continue with other features
 		} else {
-			chatbotRepo = chatbotRepo
+			chatbotRepo = repo
 			utils.Info("Chatbot repository initialized")
 		}
 

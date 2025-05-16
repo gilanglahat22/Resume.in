@@ -24,8 +24,10 @@ type SimplePostgresChatbotRepository struct {
 
 // OpenRouterRequest represents a request to the Open Router API
 type OpenRouterRequest struct {
-	Model    string    `json:"model"`
-	Messages []Message `json:"messages"`
+	Model       string    `json:"model"`
+	Messages    []Message `json:"messages"`
+	MaxTokens   int       `json:"max_tokens"`
+	Temperature float64   `json:"temperature,omitempty"`
 }
 
 // Message represents a chat message in the Open Router API format
@@ -264,15 +266,21 @@ func (r *SimplePostgresChatbotRepository) SearchSimilarDocuments(ctx context.Con
 func callOpenRouter(messages []Message) (string, error) {
 	// Get configuration for Open Router
 	cfg := config.LoadConfigFromEnv()
-	if cfg.OpenRouterAPIKey == "" {
-		return "", fmt.Errorf("OPEN_ROUTER_API_KEY is not set")
+	if cfg.OpenRouterAPIKey == "" || cfg.OpenRouterAPIKey == "your_openrouter_api_key" {
+		utils.Error("OPEN_ROUTER_API_KEY is not set or is using the default value. Please set a valid API key.")
+		return "I'm sorry, but my connection to the language model is not configured correctly. Please check your OPEN_ROUTER_API_KEY environment variable.", nil
 	}
 
 	// Prepare request to Open Router API
 	requestData := OpenRouterRequest{
-		Model:    cfg.OpenRouterModel, // Default to a model specified in config
-		Messages: messages,
+		Model:       cfg.OpenRouterModel, // Default to a model specified in config
+		Messages:    messages,
+		MaxTokens:   1000, // Lower token limit to ensure it stays within free tier
+		Temperature: 0.7,  // Add temperature for more balanced responses
 	}
+
+	// Log model being used
+	utils.Info("Using Open Router model: %s with max_tokens: %d", cfg.OpenRouterModel, requestData.MaxTokens)
 
 	requestBody, err := json.Marshal(requestData)
 	if err != nil {
@@ -414,11 +422,12 @@ func (r *SimplePostgresChatbotRepository) ProcessQuery(ctx context.Context, sess
 		response = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
 	}
 
-	// Save the assistant message
+	// Save the assistant message - make sure to include the embedding
 	assistantMsg := ChatMessage{
 		SessionID: sessionID,
 		Role:      "assistant",
 		Content:   response,
+		Embedding: embedding, // Use the same embedding as the query for simplicity
 		CreatedAt: time.Now(),
 	}
 	
