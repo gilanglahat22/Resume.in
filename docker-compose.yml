@@ -45,19 +45,6 @@ services:
     networks:
       - resume-network
 
-  frontend:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    container_name: resume-frontend
-    restart: always
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-    networks:
-      - resume-network
-
 networks:
   resume-network:
     driver: bridge
