@@ -43,6 +43,7 @@ func SetupRouter(
 			api.POST("/chat/message", chatbotController.SendMessage)
 			api.GET("/chat/history/:sessionId", chatbotController.GetChatHistory)
 			api.POST("/chat/document", chatbotController.UploadDocument)
+			api.POST("/chat/generate-resume", chatbotController.GenerateATSResume)
 		}
 	}
 
