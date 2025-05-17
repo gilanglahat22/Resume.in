@@ -128,6 +128,44 @@ var DocJSON = `{
 					}
 				}
 			}
+		},
+		"/chat/generate-resume": {
+			"post": {
+				"description": "Process chat history to generate an ATS-formatted resume in PDF",
+				"consumes": ["application/json"],
+				"produces": ["application/pdf"],
+				"tags": ["chatbot"],
+				"summary": "Generate ATS Resume",
+				"parameters": [{
+					"description": "Generate resume request",
+					"name": "request",
+					"in": "body",
+					"required": true,
+					"schema": {
+						"$ref": "#/definitions/GenerateResumeRequest"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "file"
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"schema": {
+							"$ref": "#/definitions/ErrorResponse"
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"schema": {
+							"$ref": "#/definitions/ErrorResponse"
+						}
+					}
+				}
+			}
 		}
 	},
 	"definitions": {
@@ -139,6 +177,16 @@ var DocJSON = `{
 					"type": "string",
 					"example": "What can you tell me about resume formatting?"
 				},
+				"session_id": {
+					"type": "string",
+					"example": "user123"
+				}
+			}
+		},
+		"GenerateResumeRequest": {
+			"type": "object",
+			"required": ["session_id"],
+			"properties": {
 				"session_id": {
 					"type": "string",
 					"example": "user123"
@@ -257,12 +305,12 @@ var DocJSON = `{
 	}
 }`
 
-// SwaggerInfo holds exported Swagger Info so clients can modify it
-var SwaggerInfo = &swag.Spec{
+// SwaggerInfo holds the API information
+var SwaggerInfo = swag.Spec{
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  DocJSON,
 }
 
 func init() {
-	swag.Register(SwaggerInfo.InstanceName(), SwaggerInfo)
+	swag.Register("swagger", &SwaggerInfo)
 } 

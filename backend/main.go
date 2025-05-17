@@ -102,7 +102,7 @@ func main() {
 	// Initialize chatbot controller if repository is available
 	var chatbotController *controllers.ChatbotController
 	if chatbotRepo != nil {
-		chatbotController = controllers.NewChatbotController(chatbotRepo)
+		chatbotController = controllers.NewChatbotController(chatbotRepo, resumeRepo)
 		utils.Info("Chatbot controller initialized")
 	} else {
 		utils.Warning("Chatbot features will be disabled")
