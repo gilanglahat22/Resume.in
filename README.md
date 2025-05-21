@@ -159,7 +159,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📧 Contact
 
 If you have any questions or suggestions, please open an issue or reach out to the maintainers.
-
----
-
-<p align="center">Made with ❤️ for better resume creation</p>
