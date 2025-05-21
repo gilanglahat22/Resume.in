@@ -638,12 +638,12 @@ func (c *ChatbotController) generatePDF(resume models.Resume) (string, error) {
 	}
 	
 	// Create output directory if it doesn't exist
-	outputDir := filepath.Join(os.TempDir(), "resume_pdfs")
+	outputDir := filepath.Join("test", "resume_pdfs")
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return "", err
 	}
 	
-	// Save PDF to temp file
+	// Save PDF to test folder
 	outputPath := filepath.Join(outputDir, "resume_"+utils.GenerateUUID()+".pdf")
 	err := pdf.OutputFileAndClose(outputPath)
 	if err != nil {
