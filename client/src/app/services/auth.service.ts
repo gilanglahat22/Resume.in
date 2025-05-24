@@ -20,6 +20,12 @@ export interface LoginResponse {
   expires_in: number;
 }
 
+export interface RegistrationRequest {
+  email: string;
+  name: string;
+  password: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -42,12 +48,31 @@ export class AuthService {
     }
   }
 
+  // Register a new user
+  register(email: string, name: string, password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/register`, {
+      email,
+      name,
+      password
+    }).pipe(
+      tap(response => {
+        this.storeTokens(response);
+        this.currentUserSubject.next(response.user);
+      })
+    );
+  }
+
   // Initiate Google OAuth login
   googleLogin(): Observable<{ auth_url: string }> {
     return this.http.get<{ auth_url: string }>(`${this.apiUrl}/google/login`);
   }
 
-  // Handle OAuth callback
+  // Initiate Google OAuth registration
+  googleRegister(): Observable<{ auth_url: string }> {
+    return this.http.get<{ auth_url: string }>(`${this.apiUrl}/google/register`);
+  }
+
+  // Handle OAuth callback (for both login and registration)
   handleCallback(code: string, state: string): Observable<LoginResponse> {
     return this.http.get<LoginResponse>(`${this.apiUrl}/google/callback`, {
       params: { code, state }

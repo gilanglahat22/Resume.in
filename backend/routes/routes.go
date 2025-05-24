@@ -6,9 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "resume.in/backend/docs" // Import generated docs
 	"resume.in/backend/config"
 	"resume.in/backend/controllers"
-	"resume.in/backend/docs"
 	"resume.in/backend/middleware"
 )
 
@@ -16,13 +16,13 @@ import (
 func SetupRouter(
 	cfg *config.Config,
 	authController *controllers.AuthController,
-	resumeController *controllers.ResumeController,
 	chatbotController *controllers.ChatbotController,
+	resumeController *controllers.ResumeController,
 ) *gin.Engine {
 	router := gin.Default()
 
 	// Enable CORS middleware
-	router.Use(middleware.CORSMiddleware())
+	router.Use(middleware.CORSMiddleware(cfg.AllowOrigins))
 
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
@@ -37,8 +37,15 @@ func SetupRouter(
 		// Authentication endpoints (public)
 		auth := api.Group("/auth")
 		{
+			// Registration endpoints
+			auth.POST("/register", authController.Register)
+			auth.GET("/google/register", authController.GoogleRegister)
+			
+			// Google OAuth login endpoints (unified callback handles both login and registration)
 			auth.GET("/google/login", authController.GoogleLogin)
 			auth.GET("/google/callback", authController.GoogleCallback)
+			
+			// Token management
 			auth.POST("/refresh", authController.RefreshToken)
 		}
 
@@ -50,45 +57,32 @@ func SetupRouter(
 			authProtected.GET("/profile", authController.GetProfile)
 		}
 
-		// Resume endpoints (protected)
-		resumesProtected := api.Group("/resumes")
-		resumesProtected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
-		{
-			resumesProtected.GET("", resumeController.GetResumes)
-			resumesProtected.GET("/:id", resumeController.GetResume)
-			resumesProtected.POST("", resumeController.CreateResume)
-			resumesProtected.PUT("/:id", resumeController.UpdateResume)
-			resumesProtected.DELETE("/:id", resumeController.DeleteResume)
-		}
-
 		// Chatbot endpoints (protected)
 		if chatbotController != nil {
-			chatProtected := api.Group("/chat")
-			chatProtected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+			chat := api.Group("/chat")
+			chat.Use(middleware.AuthMiddleware(cfg.JWTSecret))
 			{
-				chatProtected.POST("/message", chatbotController.SendMessage)
-				chatProtected.GET("/history/:sessionId", chatbotController.GetChatHistory)
-				chatProtected.POST("/document", chatbotController.UploadDocument)
-				chatProtected.POST("/generate-resume", chatbotController.GenerateATSResume)
+				chat.POST("/message", chatbotController.SendMessage)
+				chat.GET("/history/:sessionId", chatbotController.GetChatHistory)
+				chat.POST("/document", chatbotController.UploadDocument)
+				chat.POST("/generate-resume", chatbotController.GenerateATSResume)
 			}
+		}
+
+		// Resume endpoints (protected)
+		resume := api.Group("/resumes")
+		resume.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+		{
+			resume.GET("", resumeController.GetResumes)
+			resume.GET("/:id", resumeController.GetResume)
+			resume.POST("", resumeController.CreateResume)
+			resume.PUT("/:id", resumeController.UpdateResume)
+			resume.DELETE("/:id", resumeController.DeleteResume)
 		}
 	}
 
 	// Swagger documentation - handle with a single route
-	router.GET("/swagger/*any", func(c *gin.Context) {
-		// Get the path
-		path := c.Param("any")
-		
-		// Check if this is a request for doc.json
-		if path == "/doc.json" || path == "doc.json" {
-			c.Header("Content-Type", "application/json")
-			c.String(http.StatusOK, docs.DocJSON)
-			return
-		}
-		
-		// For all other paths, use the standard Swagger UI handler
-		ginSwagger.WrapHandler(swaggerFiles.Handler)(c)
-	})
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return router
 } 

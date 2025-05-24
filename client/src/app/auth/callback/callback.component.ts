@@ -38,14 +38,17 @@ export class CallbackComponent implements OnInit {
         return;
       }
 
-      // Handle the callback
+      // Handle the callback (works for both login and registration flows)
       this.authService.handleCallback(code, state).subscribe({
         next: (response) => {
           // Redirect to home or dashboard
           this.router.navigate(['/']);
         },
         error: (err) => {
-          this.error = 'Failed to complete authentication';
+          // Check if it's a registration flow by state parameter
+          const isRegistration = state.startsWith('register_');
+          const action = isRegistration ? 'registration' : 'authentication';
+          this.error = `Failed to complete ${action}`;
           this.isLoading = false;
           console.error('Callback error:', err);
         }

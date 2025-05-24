@@ -10,32 +10,100 @@
             <a class="text-red-500 cursor-pointer font-bold text-2xl text-center w-32">Register</a>
         </div>
        
-        <form (ngSubmit)="onSubmit()">
-            <div class="mb-4">
-                <label for="email"
-                    class="text-gray-900 italic dark:text-white">
-                    Email</label>
-                <input type="email" id="email" [(ngModel)]="registerForm.email" name="email" class="w-full p-2 mt-1 border text-gray-900 dark:text-white rounded-lg outline-none focus:border-zinc-500 border-zinc-600"/>
+        <div class="register-container">
+            <div class="register-card">
+                <h2>Create an Account</h2>
+                
+                <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            formControlName="email"
+                            class="form-control"
+                            [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+                        />
+                        <div class="invalid-feedback" *ngIf="registerForm.get('email')?.errors?.['required'] && registerForm.get('email')?.touched">
+                            Email is required
+                        </div>
+                        <div class="invalid-feedback" *ngIf="registerForm.get('email')?.errors?.['email'] && registerForm.get('email')?.touched">
+                            Please enter a valid email
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            formControlName="name"
+                            class="form-control"
+                            [class.is-invalid]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched"
+                        />
+                        <div class="invalid-feedback" *ngIf="registerForm.get('name')?.errors?.['required'] && registerForm.get('name')?.touched">
+                            Name is required
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            formControlName="password"
+                            class="form-control"
+                            [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+                        />
+                        <div class="invalid-feedback" *ngIf="registerForm.get('password')?.errors?.['required'] && registerForm.get('password')?.touched">
+                            Password is required
+                        </div>
+                        <div class="invalid-feedback" *ngIf="registerForm.get('password')?.errors?.['minlength'] && registerForm.get('password')?.touched">
+                            Password must be at least 8 characters
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            formControlName="confirmPassword"
+                            class="form-control"
+                            [class.is-invalid]="registerForm.errors?.['mismatch'] || (registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched)"
+                        />
+                        <div class="invalid-feedback" *ngIf="registerForm.get('confirmPassword')?.errors?.['required'] && registerForm.get('confirmPassword')?.touched">
+                            Please confirm your password
+                        </div>
+                        <div class="invalid-feedback" *ngIf="registerForm.errors?.['mismatch']">
+                            Passwords do not match
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger" *ngIf="error">
+                        {{ error }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" [disabled]="registerForm.invalid || loading">
+                        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        Register
+                    </button>
+
+                    <div class="divider">
+                        <span>or</span>
+                    </div>
+
+                    <button type="button" class="btn btn-outline-primary google-btn" (click)="registerWithGoogle()" [disabled]="googleLoading">
+                        <span *ngIf="googleLoading" class="spinner-border spinner-border-sm me-2"></span>
+                        <img *ngIf="!googleLoading" src="assets/google-icon.svg" alt="Google" class="google-icon" />
+                        {{ googleLoading ? 'Redirecting to Google...' : 'Register with Google' }}
+                    </button>
+
+                    <p class="mt-3 text-center">
+                        Already have an account? <a routerLink="/login">Sign in</a>
+                    </p>
+                </form>
             </div>
-
-            <div class="mb-4">
-                <label for="password"
-                    class="text-gray-900 italic dark:text-white">
-                    Password</label>
-                <input type="password" id="password" [(ngModel)]="registerForm.password" name="password" class="w-full p-2 mt-1 border text-gray-900 dark:text-white rounded-lg outline-none focus:border-zinc-500 border-zinc-600"/>
-            </div>
-
-            <button type="submit" class="flex cursor-pointer w-full mb-4 font-medium hover:bg-zinc-800 transition-all duration-300 items-center text-white justify-center py-2 gap-4 bg-zinc-700 border border-zinc-300 dark:border-zinc-600 rounded-lg">
-                Register
-            </button>
-
-        </form>
-
-        <div class="">
-            <a id="google-auth" class="flex cursor-pointer items-center justify-center py-1 gap-4 bg-zinc-100 border border-zinc-300 rounded-lg">
-                <img src="./icon/google.svg" class="w-7 h-7"/>
-                Register with google
-            </a>
         </div>
 
     </div>

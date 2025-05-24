@@ -17,6 +17,14 @@ import (
 // @title Resume.in API
 // @version 1.0
 // @description API Server for Resume.in application with chatbot capabilities and OAuth authentication
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.resume.in/support
+// @contact.email support@resume.in
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host localhost:8080
 // @BasePath /api
@@ -61,9 +69,17 @@ func main() {
 			continue
 		}
 
-		// Create users table
-		if err := models.CreateUserTable(db); err != nil {
-			utils.Error("Failed to create users table: %v", err)
+		// Run database migrations
+		dbURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+			cfg.PostgresUser,
+			cfg.PostgresPassword,
+			cfg.PostgresHost,
+			cfg.PostgresPort,
+			cfg.PostgresDB,
+			cfg.PostgresSSLMode,
+		)
+		if err := utils.RunMigrationsWithFS(dbURL, migrations); err != nil {
+			utils.Error("Failed to run migrations: %v", err)
 			os.Exit(1)
 		}
 
@@ -127,7 +143,7 @@ func main() {
 	}
 
 	// Setup router
-	router := routes.SetupRouter(cfg, authController, resumeController, chatbotController)
+	router := routes.SetupRouter(cfg, authController, chatbotController, resumeController)
 
 	// Remove the Swagger setup from here as it's now in routes.go
 	utils.Info("Swagger UI available at http://localhost:%d/swagger/index.html", cfg.ServerPort)
