@@ -39,10 +39,12 @@ func NewChatbotController(chatbotRepo models.ChatbotRepository, resumeRepo model
 // @Tags chatbot
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param request body ChatRequest true "Chat request"
-// @Success 200 {object} docs.ChatResponse
-// @Failure 400 {object} docs.ErrorResponse
-// @Failure 500 {object} docs.ErrorResponse
+// @Success 200 {object} map[string]interface{} "Response with session_id, response object, and optional resume_hint"
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /chat/message [post]
 func (c *ChatbotController) SendMessage(ctx *gin.Context) {
 	var request ChatRequest
@@ -101,10 +103,12 @@ func (c *ChatbotController) SendMessage(ctx *gin.Context) {
 // @Tags chatbot
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param sessionId path string true "Session ID"
-// @Success 200 {object} docs.ChatHistoryResponse
-// @Failure 400 {object} docs.ErrorResponse
-// @Failure 500 {object} docs.ErrorResponse
+// @Success 200 {object} map[string]interface{} "Chat history with session_id and messages array"
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /chat/history/{sessionId} [get]
 func (c *ChatbotController) GetChatHistory(ctx *gin.Context) {
 	sessionID := ctx.Param("sessionId")
@@ -139,10 +143,12 @@ type UploadDocumentRequest struct {
 // @Tags chatbot
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param request body UploadDocumentRequest true "Document upload request"
-// @Success 200 {object} docs.DocumentResponse
-// @Failure 400 {object} docs.ErrorResponse
-// @Failure 500 {object} docs.ErrorResponse
+// @Success 200 {object} map[string]interface{} "Upload status"
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /chat/document [post]
 func (c *ChatbotController) UploadDocument(ctx *gin.Context) {
 	var request UploadDocumentRequest
@@ -176,10 +182,12 @@ type GenerateResumeRequest struct {
 // @Tags chatbot
 // @Accept json
 // @Produce application/pdf
+// @Security Bearer
 // @Param request body GenerateResumeRequest true "Generate resume request"
-// @Success 200 {file} file "Resume PDF file"
-// @Failure 400 {object} docs.ErrorResponse
-// @Failure 500 {object} docs.ErrorResponse
+// @Success 200 {file} binary "Resume PDF file"
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /chat/generate-resume [post]
 func (c *ChatbotController) GenerateATSResume(ctx *gin.Context) {
 	var request GenerateResumeRequest

@@ -17,6 +17,7 @@
 - 🗃️ Persistent data storage with PostgreSQL and pgvector
 - 🔄 Real-time updates and instant preview
 - 📤 Export to PDF format
+- 🔐 OAuth 2.0 authentication with Google SSO
 
 ## 🚀 Getting Started
 
@@ -25,6 +26,40 @@
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 - An OpenRouter API key for AI capabilities
+- Google OAuth credentials (see OAuth Setup below)
+
+### OAuth Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API
+4. Go to "Credentials" and create OAuth 2.0 Client ID
+5. Set up the OAuth consent screen
+6. Add authorized redirect URIs:
+   - `http://localhost:8080/api/auth/google/callback` (for local development)
+   - Your production domain callback URL
+7. Copy your Client ID and Client Secret
+
+### Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# OpenRouter API
+OPEN_ROUTER_API_KEY=your_openrouter_api_key
+OPEN_ROUTER_MODEL=anthropic/claude-3-sonnet:beta
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URL=http://localhost:8080/api/auth/google/callback
+
+# JWT Secret (change this in production)
+JWT_SECRET=your-secret-key-change-in-production
+
+# Frontend URL
+FRONTEND_URL=http://localhost:3000
+```
 
 ### Using Scripts
 
@@ -71,24 +106,45 @@
 
 ## 🔗 Accessing the Application
 
-- Frontend: http://localhost:4200
+- Frontend: http://localhost:3000
 - Backend API: http://localhost:8080/api
 - Health Check: http://localhost:8080/health
+- **Swagger UI**: http://localhost:8080/swagger/index.html
+
+## 📚 API Documentation
+
+Comprehensive API documentation is available in two formats:
+
+1. **Interactive Swagger UI**: Access the interactive API documentation at http://localhost:8080/swagger/index.html
+2. **Markdown Documentation**: See [backend/API_DOCUMENTATION.md](backend/API_DOCUMENTATION.md) for detailed endpoint descriptions
+
+The API includes the following main sections:
+- **Authentication** (OAuth 2.0 with Google SSO)
+- **Resume Management** (CRUD operations)
+- **AI Chatbot** (Conversation and resume generation)
+- **Document Management** (Vector store for context)
+
+All protected endpoints require JWT authentication using the Bearer scheme.
 
 ## 📚 API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/resume` | Get all resumes |
-| GET | `/api/resume/:id` | Get a resume by ID |
-| POST | `/api/resume` | Create a new resume |
-| PUT | `/api/resume/:id` | Update a resume |
-| DELETE | `/api/resume/:id` | Delete a resume |
-| GET | `/api/skills` | Get all skills |
-| GET | `/api/experience` | Get all experiences |
-| POST | `/api/chat/message` | Send a message to the chatbot |
-| GET | `/api/chat/history/:sessionId` | Get chat history |
-| POST | `/api/chat/generate-resume` | Generate a resume from chat history |
+| GET | `/api/auth/google/login` | Initiate Google OAuth login |
+| GET | `/api/auth/google/callback` | Handle OAuth callback |
+| POST | `/api/auth/refresh` | Refresh JWT token |
+| POST | `/api/auth/logout` | Logout user (requires auth) |
+| GET | `/api/auth/profile` | Get user profile (requires auth) |
+| GET | `/api/resume` | Get all resumes (requires auth) |
+| GET | `/api/resume/:id` | Get a resume by ID (requires auth) |
+| POST | `/api/resume` | Create a new resume (requires auth) |
+| PUT | `/api/resume/:id` | Update a resume (requires auth) |
+| DELETE | `/api/resume/:id` | Delete a resume (requires auth) |
+| GET | `/api/skills` | Get all skills (requires auth) |
+| GET | `/api/experience` | Get all experiences (requires auth) |
+| POST | `/api/chat/message` | Send a message to the chatbot (requires auth) |
+| GET | `/api/chat/history/:sessionId` | Get chat history (requires auth) |
+| POST | `/api/chat/generate-resume` | Generate a resume from chat history (requires auth) |
 
 ## 📁 Project Structure
 
@@ -104,8 +160,15 @@ resume.in/
 │   └── test/             # Test files and output
 ├── client/               # Angular frontend
 │   ├── src/              # Source code
+│   │   ├── app/          # Application components
+│   │   │   ├── auth/     # Authentication components
+│   │   │   ├── guards/   # Route guards
+│   │   │   ├── interceptors/ # HTTP interceptors
+│   │   │   └── services/ # Services
+│   │   └── ...
 │   └── ...
 ├── docker-compose.yml    # Docker Compose configuration
+├── .env                  # Environment variables (create this)
 ├── start.sh              # Script to start the application (Linux/Mac)
 ├── stop.sh               # Script to stop the application (Linux/Mac)
 ├── start.bat             # Script to start the application (Windows)
@@ -132,6 +195,13 @@ cd client
 npm install
 npm start
 ```
+
+## 🔒 Security Notes
+
+1. **JWT Secret**: Make sure to change the default JWT secret in production
+2. **OAuth Credentials**: Keep your Google OAuth credentials secure and never commit them to version control
+3. **CORS**: Update the `ALLOW_ORIGINS` environment variable in production to only allow your domain
+4. **HTTPS**: Use HTTPS in production for secure OAuth flow
 
 ## 🤝 Contributing
 

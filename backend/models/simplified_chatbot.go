@@ -3,7 +3,6 @@ package models
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/pgvector/pgvector-go"
 	"resume.in/backend/utils"
 	"resume.in/backend/config"
@@ -19,7 +19,7 @@ import (
 // SimplePostgresChatbotRepository provides a simplified implementation
 // without LangChain dependencies to avoid build issues
 type SimplePostgresChatbotRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
 // OpenRouterRequest represents a request to the Open Router API
@@ -51,12 +51,12 @@ type OpenRouterResponse struct {
 
 // NewPostgresChatbotRepository creates a new PostgreSQL chatbot repository
 // This is the function called from main.go
-func NewPostgresChatbotRepository(db *sql.DB) (ChatbotRepository, error) {
+func NewPostgresChatbotRepository(db *sqlx.DB) (ChatbotRepository, error) {
 	return NewSimplePostgresChatbotRepository(db)
 }
 
 // NewSimplePostgresChatbotRepository creates a new PostgreSQL chatbot repository
-func NewSimplePostgresChatbotRepository(db *sql.DB) (*SimplePostgresChatbotRepository, error) {
+func NewSimplePostgresChatbotRepository(db *sqlx.DB) (*SimplePostgresChatbotRepository, error) {
 	repo := &SimplePostgresChatbotRepository{
 		db: db,
 	}

@@ -1,12 +1,12 @@
 package config
 
 import (
-	"database/sql"
 	"fmt"
 	"net"
 	"os"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"resume.in/backend/utils"
 )
@@ -34,7 +34,7 @@ func GetDBConfig() *DBConfig {
 }
 
 // ConnectDB establishes a connection to the database
-func ConnectDB() (*sql.DB, error) {
+func ConnectDB() (*sqlx.DB, error) {
 	dbConfig := GetDBConfig()
 
 	// Try to resolve the database host first to check network connectivity
@@ -52,7 +52,7 @@ func ConnectDB() (*sql.DB, error) {
 
 	utils.Info("Attempting to connect to database at %s:%s", dbConfig.Host, dbConfig.Port)
 	
-	db, err := sql.Open("postgres", connStr)
+	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func ConnectDB() (*sql.DB, error) {
 }
 
 // ping attempts to ping the database with a timeout
-func ping(db *sql.DB, timeout time.Duration) error {
+func ping(db *sqlx.DB, timeout time.Duration) error {
 	errc := make(chan error, 1)
 	go func() {
 		errc <- db.Ping()

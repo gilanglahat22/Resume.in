@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"resume.in/backend/config"
 	"resume.in/backend/controllers"
 	"resume.in/backend/docs"
 	"resume.in/backend/middleware"
@@ -13,6 +14,8 @@ import (
 
 // SetupRouter configures all API routes
 func SetupRouter(
+	cfg *config.Config,
+	authController *controllers.AuthController,
 	resumeController *controllers.ResumeController,
 	chatbotController *controllers.ChatbotController,
 ) *gin.Engine {
@@ -31,19 +34,43 @@ func SetupRouter(
 	// API routes
 	api := router.Group("/api")
 	{
-		// Resume endpoints
-		api.GET("/resumes", resumeController.GetResumes)
-		api.GET("/resumes/:id", resumeController.GetResume)
-		api.POST("/resumes", resumeController.CreateResume)
-		api.PUT("/resumes/:id", resumeController.UpdateResume)
-		api.DELETE("/resumes/:id", resumeController.DeleteResume)
+		// Authentication endpoints (public)
+		auth := api.Group("/auth")
+		{
+			auth.GET("/google/login", authController.GoogleLogin)
+			auth.GET("/google/callback", authController.GoogleCallback)
+			auth.POST("/refresh", authController.RefreshToken)
+		}
 
-		// Chatbot endpoints
+		// Protected authentication endpoints
+		authProtected := auth.Group("")
+		authProtected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+		{
+			authProtected.POST("/logout", authController.Logout)
+			authProtected.GET("/profile", authController.GetProfile)
+		}
+
+		// Resume endpoints (protected)
+		resumesProtected := api.Group("/resumes")
+		resumesProtected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+		{
+			resumesProtected.GET("", resumeController.GetResumes)
+			resumesProtected.GET("/:id", resumeController.GetResume)
+			resumesProtected.POST("", resumeController.CreateResume)
+			resumesProtected.PUT("/:id", resumeController.UpdateResume)
+			resumesProtected.DELETE("/:id", resumeController.DeleteResume)
+		}
+
+		// Chatbot endpoints (protected)
 		if chatbotController != nil {
-			api.POST("/chat/message", chatbotController.SendMessage)
-			api.GET("/chat/history/:sessionId", chatbotController.GetChatHistory)
-			api.POST("/chat/document", chatbotController.UploadDocument)
-			api.POST("/chat/generate-resume", chatbotController.GenerateATSResume)
+			chatProtected := api.Group("/chat")
+			chatProtected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+			{
+				chatProtected.POST("/message", chatbotController.SendMessage)
+				chatProtected.GET("/history/:sessionId", chatbotController.GetChatHistory)
+				chatProtected.POST("/document", chatbotController.UploadDocument)
+				chatProtected.POST("/generate-resume", chatbotController.GenerateATSResume)
+			}
 		}
 	}
 
