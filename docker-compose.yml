@@ -6,9 +6,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: resumeuser
-      POSTGRES_PASSWORD: resumepassword
-      POSTGRES_DB: resumedb
+      POSTGRES_USER: ${POSTGRES_USER:-resumeuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-resumepassword}
+      POSTGRES_DB: ${POSTGRES_DB:-resumedb}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -23,32 +23,39 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        - OPEN_ROUTER_API_KEY=${OPEN_ROUTER_API_KEY:-your_openrouter_api_key}
     container_name: resume-backend
     restart: always
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "${SERVER_PORT:-8080}:8080"
     environment:
-      SERVER_PORT: 8080
-      ENVIRONMENT: development
-      ALLOW_ORIGINS: "http://localhost:3000,http://localhost:4200"
-      LOG_LEVEL: debug
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: resumeuser
-      POSTGRES_PASSWORD: resumepassword
-      POSTGRES_DB: resumedb
-      POSTGRES_SSLMODE: disable
-      OPEN_ROUTER_API_KEY: ${OPEN_ROUTER_API_KEY:-your_openrouter_api_key}
+      # Server Configuration
+      SERVER_PORT: ${SERVER_PORT:-8080}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      ALLOW_ORIGINS: ${ALLOW_ORIGINS:-"http://localhost:3000,http://localhost:4200"}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      
+      # Database Configuration
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_USER: ${POSTGRES_USER:-resumeuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-resumepassword}
+      POSTGRES_DB: ${POSTGRES_DB:-resumedb}
+      POSTGRES_SSLMODE: ${POSTGRES_SSLMODE:-disable}
+      
+      # API Configuration
+      OPEN_ROUTER_API_KEY: ${OPEN_ROUTER_API_KEY}
       OPEN_ROUTER_MODEL: ${OPEN_ROUTER_MODEL:-anthropic/claude-3-sonnet:beta}
+      
+      # Authentication Configuration
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-your_google_client_id}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-your_google_client_secret}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       GOOGLE_REDIRECT_URL: ${GOOGLE_REDIRECT_URL:-http://localhost:8080/api/auth/google/callback}
+      
+      # Frontend Configuration
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     networks:
       - resume-network
