@@ -72,21 +72,9 @@ export class AuthService {
     return this.http.get<{ auth_url: string }>(`${this.apiUrl}/google/register`);
   }
 
-  // Handle OAuth callback (for login)
+  // Handle OAuth callback (for both login and registration)
   handleCallback(code: string, state: string): Observable<LoginResponse> {
     return this.http.get<LoginResponse>(`${this.apiUrl}/google/callback`, {
-      params: { code, state }
-    }).pipe(
-      tap(response => {
-        this.storeTokens(response);
-        this.currentUserSubject.next(response.user);
-      })
-    );
-  }
-
-  // Handle OAuth registration callback
-  handleRegisterCallback(code: string, state: string): Observable<LoginResponse> {
-    return this.http.get<LoginResponse>(`${this.apiUrl}/google/register/callback`, {
       params: { code, state }
     }).pipe(
       tap(response => {

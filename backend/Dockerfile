@@ -11,7 +11,7 @@ RUN go mod download
 # Copy the rest of the source code
 COPY . .
 
-# Run go mod tidy to ensure dependencies are correct
+# Run go mod tidy
 RUN go mod tidy
 
 # Build the application
@@ -25,7 +25,7 @@ WORKDIR /app
 # Install necessary packages
 RUN apk --no-cache add ca-certificates tzdata
 
-# Copy the binary from the builder stage
+# Copy the binary
 COPY --from=builder /app/main .
 
 # Expose the port the app runs on

@@ -22,8 +22,8 @@ func NewPostgresUserRepository(db *sqlx.DB) UserRepository {
 // Create creates a new user
 func (r *PostgresUserRepository) Create(ctx context.Context, user *User) error {
 	query := `
-		INSERT INTO users (id, email, name, provider, provider_id, picture, role, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		INSERT INTO users (id, email, name, password, provider, provider_id, picture, role, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	`
 	
 	if user.Role == "" {
@@ -33,7 +33,8 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *User) error {
 	_, err := r.db.ExecContext(ctx, query, 
 		user.ID, 
 		user.Email, 
-		user.Name, 
+		user.Name,
+		user.Password,
 		user.Provider, 
 		user.ProviderID, 
 		user.Picture, 
@@ -48,7 +49,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *User) error {
 // GetByID retrieves a user by ID
 func (r *PostgresUserRepository) GetByID(ctx context.Context, id string) (*User, error) {
 	query := `
-		SELECT id, email, name, provider, provider_id, picture, role, created_at, updated_at
+		SELECT id, email, name, password, provider, provider_id, picture, role, created_at, updated_at
 		FROM users
 		WHERE id = $1
 	`
@@ -68,13 +69,33 @@ func (r *PostgresUserRepository) GetByID(ctx context.Context, id string) (*User,
 // GetByEmail retrieves a user by email
 func (r *PostgresUserRepository) GetByEmail(ctx context.Context, email string) (*User, error) {
 	query := `
-		SELECT id, email, name, provider, provider_id, picture, role, created_at, updated_at
+		SELECT id, email, name, password, provider, provider_id, picture, role, created_at, updated_at
 		FROM users
 		WHERE email = $1
 	`
 	
 	var user User
 	err := r.db.GetContext(ctx, &user, query, email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	
+	return &user, nil
+}
+
+// GetByProviderID retrieves a user by provider and provider ID
+func (r *PostgresUserRepository) GetByProviderID(ctx context.Context, provider, providerID string) (*User, error) {
+	query := `
+		SELECT id, email, name, password, provider, provider_id, picture, role, created_at, updated_at
+		FROM users
+		WHERE provider = $1 AND provider_id = $2
+	`
+	
+	var user User
+	err := r.db.GetContext(ctx, &user, query, provider, providerID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("user not found")
@@ -135,8 +156,9 @@ func CreateUserTable(db *sqlx.DB) error {
 			id VARCHAR(255) PRIMARY KEY,
 			email VARCHAR(255) UNIQUE NOT NULL,
 			name VARCHAR(255) NOT NULL,
+			password VARCHAR(255),
 			provider VARCHAR(50) NOT NULL,
-			provider_id VARCHAR(255) NOT NULL,
+			provider_id VARCHAR(255),
 			picture TEXT,
 			role VARCHAR(50) NOT NULL DEFAULT 'user',
 			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

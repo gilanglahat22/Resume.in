@@ -24,7 +24,23 @@ Authorization: Bearer {your-jwt-token}
   }
   ```
 
-#### 2. Google OAuth Callback
+#### 2. Google OAuth Registration
+- **GET** `/api/auth/google/register`
+- **Authentication**: Not required
+- **Description**: Initiates Google OAuth registration flow with additional consent scopes
+- **Response**: 
+  ```json
+  {
+    "auth_url": "https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&prompt=consent&..."
+  }
+  ```
+- **Note**: This endpoint requests additional permissions including:
+  - User profile information (email, name, picture)
+  - Birthday information
+  - Gender information
+  - Phone numbers
+
+#### 3. Google OAuth Callback
 - **GET** `/api/auth/google/callback`
 - **Authentication**: Not required
 - **Query Parameters**: 
@@ -50,7 +66,34 @@ Authorization: Bearer {your-jwt-token}
   }
   ```
 
-#### 3. Refresh Token
+#### 4. Google OAuth Registration Callback
+- **GET** `/api/auth/google/register/callback`
+- **Authentication**: Not required
+- **Query Parameters**: 
+  - `code` (required): Authorization code from Google
+  - `state` (required): OAuth state for security
+- **Description**: Processes the OAuth registration callback with additional user information
+- **Response**: Same as Google OAuth Callback
+- **Error Responses**:
+  - `400`: Invalid state parameter or missing parameters
+  - `409`: Email already registered
+  - `500`: Internal server error
+
+#### 5. Email/Password Registration
+- **POST** `/api/auth/register`
+- **Authentication**: Not required
+- **Request Body**:
+  ```json
+  {
+    "email": "user@example.com",
+    "name": "John Doe",
+    "password": "securepassword123"
+  }
+  ```
+- **Description**: Create a new user account with email and password
+- **Response**: Same as Google OAuth Callback
+
+#### 6. Refresh Token
 - **POST** `/api/auth/refresh`
 - **Authentication**: Not required
 - **Request Body**:
@@ -62,22 +105,50 @@ Authorization: Bearer {your-jwt-token}
 - **Description**: Refresh an expired JWT token using refresh token
 - **Response**: Same as Google OAuth Callback
 
-#### 4. Logout
+#### 7. Logout
 - **POST** `/api/auth/logout`
 - **Authentication**: Required (Bearer token)
 - **Description**: Logout the current user
-- **Response**: 
+- **Response**:
   ```json
   {
     "message": "Logged out successfully"
   }
   ```
 
-#### 5. Get User Profile
+#### 8. Get User Profile
 - **GET** `/api/auth/profile`
 - **Authentication**: Required (Bearer token)
 - **Description**: Get the current authenticated user's profile
-- **Response**: User object
+- **Response**:
+  ```json
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "picture": "https://example.com/profile.jpg",
+    "provider": "google",
+    "role": "user",
+    "created_at": "2023-05-17T01:52:36.789Z",
+    "updated_at": "2023-05-17T01:52:36.789Z"
+  }
+  ```
+
+### Registration Flow
+
+#### OAuth Registration with Google
+1. **Frontend calls** `/api/auth/google/register`
+2. **User redirected** to Google consent screen with enhanced permissions
+3. **User grants consent** for profile, birthday, gender, and phone access
+4. **Google redirects** to `/api/auth/google/register/callback`
+5. **Backend processes** callback and creates user account
+6. **Returns JWT tokens** and user profile
+
+#### Differences between Login and Registration OAuth flows:
+- **Login flow** (`/auth/google/login`): Basic profile permissions only
+- **Registration flow** (`/auth/google/register`): Additional permissions + consent screen always shown
+- **Login callback** creates OR updates existing users
+- **Registration callback** only creates new users (returns 409 if email exists)
 
 ### Resume Endpoints
 
