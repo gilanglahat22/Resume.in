@@ -13,6 +13,17 @@ type Config struct {
 	LogLevel         string
 	OpenRouterAPIKey string
 	OpenRouterModel  string
+	
+	// JWT configuration
+	JWTSecret        string
+	
+	// OAuth configuration
+	GoogleClientID     string
+	GoogleClientSecret string
+	GoogleRedirectURL  string
+	
+	// Frontend URL
+	FrontendURL      string
 }
 
 // NewConfig creates and returns a new Config with default values
@@ -24,6 +35,9 @@ func NewConfig() *Config {
 		LogLevel:         "debug",
 		OpenRouterAPIKey: "",
 		OpenRouterModel:  "anthropic/claude-3-opus:beta", // Default to a powerful model
+		JWTSecret:        "your-secret-key-change-in-production",
+		FrontendURL:      "http://localhost:3000",
+		GoogleRedirectURL: "http://localhost:8080/api/auth/google/callback",
 	}
 }
 
@@ -61,6 +75,29 @@ func LoadConfigFromEnv() *Config {
 	// Open Router model
 	if model := os.Getenv("OPEN_ROUTER_MODEL"); model != "" {
 		config.OpenRouterModel = model
+	}
+	
+	// JWT Secret
+	if jwtSecret := os.Getenv("JWT_SECRET"); jwtSecret != "" {
+		config.JWTSecret = jwtSecret
+	}
+	
+	// Google OAuth
+	if clientID := os.Getenv("GOOGLE_CLIENT_ID"); clientID != "" {
+		config.GoogleClientID = clientID
+	}
+	
+	if clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET"); clientSecret != "" {
+		config.GoogleClientSecret = clientSecret
+	}
+	
+	if redirectURL := os.Getenv("GOOGLE_REDIRECT_URL"); redirectURL != "" {
+		config.GoogleRedirectURL = redirectURL
+	}
+	
+	// Frontend URL
+	if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
+		config.FrontendURL = frontendURL
 	}
 	
 	return config

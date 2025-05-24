@@ -1,0 +1,17 @@
+<div class="w-full h-screen flex items-center justify-center bg-zinc-100 dark:bg-zinc-900">
+    <div class="text-center">
+        <div *ngIf="isLoading" class="flex flex-col items-center">
+            <div class="w-16 h-16 border-4 border-zinc-300 border-t-zinc-700 rounded-full animate-spin"></div>
+            <p class="mt-4 text-xl text-zinc-700 dark:text-zinc-300">Completing authentication...</p>
+        </div>
+        
+        <div *ngIf="!isLoading && error" class="flex flex-col items-center">
+            <div class="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 class="text-2xl font-bold text-red-600 dark:text-red-400 mb-2">Authentication Failed</h2>
+            <p class="text-zinc-700 dark:text-zinc-300 mb-6">{{ error }}</p>
+            <a href="/login" class="px-6 py-2 bg-zinc-700 text-white rounded-lg hover:bg-zinc-800 transition-all duration-300">
+                Back to Login
+            </a>
+        </div>
+    </div>
+</div> 

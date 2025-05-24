@@ -25,10 +25,12 @@ func NewResumeController(repository models.ResumeRepository) *ResumeController {
 // @Tags resume
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param id path string true "Resume ID"
-// @Success 200 {object} docs.Resume
-// @Failure 404 {object} docs.ErrorResponse
-// @Router /resume/{id} [get]
+// @Success 200 {object} models.Resume
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Resume not found"
+// @Router /resumes/{id} [get]
 func (c *ResumeController) GetResume(ctx *gin.Context) {
 	id := ctx.Param("id")
 	
@@ -47,7 +49,9 @@ func (c *ResumeController) GetResume(ctx *gin.Context) {
 // @Tags resume
 // @Accept json
 // @Produce json
-// @Success 200 {array} docs.Resume
+// @Security Bearer
+// @Success 200 {array} models.Resume
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Router /resumes [get]
 func (c *ResumeController) GetResumes(ctx *gin.Context) {
 	resumes := c.repository.FindAll()
@@ -60,10 +64,12 @@ func (c *ResumeController) GetResumes(ctx *gin.Context) {
 // @Tags resume
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param resume body models.Resume true "Resume object"
-// @Success 201 {object} docs.Resume
-// @Failure 400 {object} docs.ErrorResponse
-// @Router /resume [post]
+// @Success 201 {object} models.Resume
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Router /resumes [post]
 func (c *ResumeController) CreateResume(ctx *gin.Context) {
 	var resume models.Resume
 	
@@ -92,12 +98,14 @@ func (c *ResumeController) CreateResume(ctx *gin.Context) {
 // @Tags resume
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param id path string true "Resume ID"
 // @Param resume body models.Resume true "Resume object"
-// @Success 200 {object} docs.Resume
-// @Failure 400 {object} docs.ErrorResponse
-// @Failure 404 {object} docs.ErrorResponse
-// @Router /resume/{id} [put]
+// @Success 200 {object} models.Resume
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Resume not found"
+// @Router /resumes/{id} [put]
 func (c *ResumeController) UpdateResume(ctx *gin.Context) {
 	id := ctx.Param("id")
 	
@@ -122,10 +130,12 @@ func (c *ResumeController) UpdateResume(ctx *gin.Context) {
 // @Tags resume
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param id path string true "Resume ID"
-// @Success 200 {object} map[string]string
-// @Failure 404 {object} docs.ErrorResponse
-// @Router /resume/{id} [delete]
+// @Success 200 {object} map[string]string "status: deleted"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Resume not found"
+// @Router /resumes/{id} [delete]
 func (c *ResumeController) DeleteResume(ctx *gin.Context) {
 	id := ctx.Param("id")
 	
@@ -144,7 +154,9 @@ func (c *ResumeController) DeleteResume(ctx *gin.Context) {
 // @Tags skills
 // @Accept json
 // @Produce json
-// @Success 200 {array} docs.Skill
+// @Security Bearer
+// @Success 200 {array} models.Skill
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Router /skills [get]
 func (c *ResumeController) GetAllSkills(ctx *gin.Context) {
 	skills := c.repository.GetAllSkills()
@@ -157,7 +169,9 @@ func (c *ResumeController) GetAllSkills(ctx *gin.Context) {
 // @Tags experience
 // @Accept json
 // @Produce json
-// @Success 200 {array} docs.Experience
+// @Security Bearer
+// @Success 200 {array} models.Experience
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Router /experience [get]
 func (c *ResumeController) GetAllExperience(ctx *gin.Context) {
 	experiences := c.repository.GetAllExperience()

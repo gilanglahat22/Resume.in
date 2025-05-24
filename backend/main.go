@@ -16,14 +16,16 @@ import (
 
 // @title Resume.in API
 // @version 1.0
-// @description API Server for Resume.in application with chatbot capabilities
+// @description API Server for Resume.in application with chatbot capabilities and OAuth authentication
 
 // @host localhost:8080
 // @BasePath /api
+// @schemes http https
 
-// @securityDefinitions.apikey ApiKeyAuth
+// @securityDefinitions.apikey Bearer
 // @in header
 // @name Authorization
+// @description JWT Authorization header using the Bearer scheme. Example: "Bearer {token}"
 
 func main() {
 	// Initialize loggers
@@ -46,6 +48,7 @@ func main() {
 	// Connect to database with retry
 	var resumeRepo models.ResumeRepository
 	var chatbotRepo models.ChatbotRepository
+	var userRepo models.UserRepository
 	var maxRetries = 5
 	var retryDelay = 5 * time.Second
 
@@ -56,6 +59,12 @@ func main() {
 				err, retryDelay, i+1, maxRetries)
 			time.Sleep(retryDelay)
 			continue
+		}
+
+		// Create users table
+		if err := models.CreateUserTable(db); err != nil {
+			utils.Error("Failed to create users table: %v", err)
+			os.Exit(1)
 		}
 
 		// Setup PostgreSQL repository for resume
@@ -83,6 +92,10 @@ func main() {
 			utils.Info("Chatbot repository initialized")
 		}
 
+		// Setup PostgreSQL repository for users
+		userRepo = models.NewPostgresUserRepository(db)
+		utils.Info("User repository initialized")
+
 		break
 	}
 
@@ -94,9 +107,14 @@ func main() {
 		memoryRepo := models.NewInMemoryResumeRepository()
 		memoryRepo.InitDemoData()
 		resumeRepo = memoryRepo
+		
+		// For users, we need a database connection
+		utils.Error("Authentication features require a database connection")
+		os.Exit(1)
 	}
 
 	// Initialize controllers
+	authController := controllers.NewAuthController(cfg, userRepo)
 	resumeController := controllers.NewResumeController(resumeRepo)
 	
 	// Initialize chatbot controller if repository is available
@@ -109,7 +127,7 @@ func main() {
 	}
 
 	// Setup router
-	router := routes.SetupRouter(resumeController, chatbotController)
+	router := routes.SetupRouter(cfg, authController, resumeController, chatbotController)
 
 	// Remove the Swagger setup from here as it's now in routes.go
 	utils.Info("Swagger UI available at http://localhost:%d/swagger/index.html", cfg.ServerPort)

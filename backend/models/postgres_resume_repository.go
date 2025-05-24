@@ -1,19 +1,20 @@
 package models
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
+	
+	"github.com/jmoiron/sqlx"
 )
 
 // PostgresResumeRepository implements ResumeRepository with PostgreSQL
 type PostgresResumeRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
 // NewPostgresResumeRepository creates a new repository with the given database connection
-func NewPostgresResumeRepository(db *sql.DB) (*PostgresResumeRepository, error) {
+func NewPostgresResumeRepository(db *sqlx.DB) (*PostgresResumeRepository, error) {
 	repo := &PostgresResumeRepository{
 		db: db,
 	}
@@ -43,7 +44,7 @@ func (r *PostgresResumeRepository) initTables() error {
 // FindAll returns all resumes
 func (r *PostgresResumeRepository) FindAll() []Resume {
 	query := `SELECT data FROM resumes;`
-	rows, err := r.db.Query(query)
+	rows, err := r.db.Queryx(query)
 	if err != nil {
 		return []Resume{}
 	}
@@ -71,7 +72,7 @@ func (r *PostgresResumeRepository) FindAll() []Resume {
 func (r *PostgresResumeRepository) FindByID(id string) (Resume, error) {
 	query := `SELECT data FROM resumes WHERE id = $1;`
 	var data []byte
-	err := r.db.QueryRow(query, id).Scan(&data)
+	err := r.db.QueryRowx(query, id).Scan(&data)
 	if err != nil {
 		return Resume{}, errors.New("resume not found")
 	}
