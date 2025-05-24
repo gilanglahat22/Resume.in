@@ -1,19 +1,79 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
-  imports: [FormsModule],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent {
-  registerForm = { email: '', password: ''}
+  registerForm: FormGroup;
+  error: string = '';
+  loading: boolean = false;
+  googleLoading: boolean = false;
+
+  constructor(
+    private formBuilder: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
+    this.registerForm = this.formBuilder.group({
+      email: ['', [Validators.required, Validators.email]],
+      name: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required]
+    }, {
+      validator: this.passwordMatchValidator
+    });
+  }
+
+  // Custom validator to check if passwords match
+  private passwordMatchValidator(g: FormGroup) {
+    const password = g.get('password');
+    const confirmPassword = g.get('confirmPassword');
+    if (password && confirmPassword && password.value !== confirmPassword.value) {
+      return { 'mismatch': true };
+    }
+    return null;
+  }
 
   onSubmit() {
-    if (this.registerForm.email.trim() === '' || 
-      this.registerForm.password.trim() === '') {
+    if (this.registerForm.invalid) {
       return;
     }
+
+    this.loading = true;
+    this.error = '';
+
+    const { email, name, password } = this.registerForm.value;
+
+    this.authService.register(email, name, password).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        this.error = error.error.error || 'Registration failed';
+        this.loading = false;
+      }
+    });
+  }
+
+  // Google OAuth registration with additional consent
+  registerWithGoogle() {
+    this.googleLoading = true;
+    this.error = '';
+    
+    this.authService.googleRegister().subscribe({
+      next: (response) => {
+        // Redirect to Google OAuth consent screen with additional permissions
+        window.location.href = response.auth_url;
+      },
+      error: (error) => {
+        this.error = 'Failed to initiate Google registration';
+        this.googleLoading = false;
+      }
+    });
   }
 }

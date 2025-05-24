@@ -9,5 +9,6 @@ export const routes: Routes = [
     { path: '', component: DefaultPageComponent, canActivate: [authGuard] },
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
-    { path: 'auth/callback', component: CallbackComponent }
+    { path: 'auth/callback', component: CallbackComponent },
+    { path: 'auth/register/callback', component: CallbackComponent }
 ];

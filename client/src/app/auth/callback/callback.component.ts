@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 export class CallbackComponent implements OnInit {
   isLoading = true;
   error = '';
+  isRegistration = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -20,6 +21,10 @@ export class CallbackComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    // Check if this is a registration callback based on the URL
+    const currentUrl = this.router.url;
+    this.isRegistration = currentUrl.includes('/register/callback');
+
     // Get code and state from query parameters
     this.route.queryParams.subscribe(params => {
       const code = params['code'];
@@ -38,14 +43,19 @@ export class CallbackComponent implements OnInit {
         return;
       }
 
-      // Handle the callback
-      this.authService.handleCallback(code, state).subscribe({
+      // Handle the callback based on whether it's login or registration
+      const callbackMethod = this.isRegistration 
+        ? this.authService.handleRegisterCallback(code, state)
+        : this.authService.handleCallback(code, state);
+
+      callbackMethod.subscribe({
         next: (response) => {
           // Redirect to home or dashboard
           this.router.navigate(['/']);
         },
         error: (err) => {
-          this.error = 'Failed to complete authentication';
+          const action = this.isRegistration ? 'registration' : 'authentication';
+          this.error = `Failed to complete ${action}`;
           this.isLoading = false;
           console.error('Callback error:', err);
         }
