@@ -19,6 +19,176 @@
 - 📤 Export to PDF format
 - 🔐 OAuth 2.0 authentication with Google SSO
 
+## 🏗️ System Architecture
+
+### Overview
+
+Resume.in follows a modern microservices architecture with a clear separation between frontend, backend, and data storage layers. The system is designed for scalability, security, and maintainability.
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        A[Angular SPA<br/>Port: 3000]
+    end
+    
+    subgraph "API Gateway"
+        B[Nginx Reverse Proxy<br/>Load Balancer]
+    end
+    
+    subgraph "Backend Services"
+        C[Go REST API<br/>Port: 8080]
+        D[Authentication Service<br/>OAuth 2.0 / JWT]
+        E[AI Service<br/>OpenRouter Integration]
+    end
+    
+    subgraph "Data Layer"
+        F[(PostgreSQL + pgvector<br/>Port: 5432)]
+        G[Vector Store<br/>Embeddings]
+    end
+    
+    subgraph "External Services"
+        H[Google OAuth]
+        I[OpenRouter AI API]
+    end
+    
+    A -->|HTTPS| B
+    B --> C
+    C --> D
+    C --> E
+    C --> F
+    F --> G
+    D --> H
+    E --> I
+```
+
+### Technology Stack
+
+#### Frontend
+- **Framework**: Angular 19.2
+- **Styling**: Tailwind CSS 4.1
+- **State Management**: RxJS
+- **Authentication**: JWT with HTTP Interceptors
+- **Build Tool**: Angular CLI with Vite
+
+#### Backend
+- **Language**: Go 1.21+
+- **Framework**: Gin Web Framework
+- **Authentication**: OAuth 2.0 (Google) + JWT
+- **API Documentation**: Swagger/OpenAPI
+- **Database ORM**: sqlx
+- **Vector Operations**: pgvector
+
+#### Database
+- **Primary Database**: PostgreSQL 14
+- **Vector Extension**: pgvector for AI embeddings
+- **Session Management**: Database-backed sessions
+
+#### Infrastructure
+- **Containerization**: Docker & Docker Compose
+- **Reverse Proxy**: Nginx
+- **API Gateway**: Built-in CORS and rate limiting
+
+### Component Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Frontend (Angular)                     │
+├─────────────────────────────────────────────────────────────┤
+│  Components │  Services  │  Guards   │  Interceptors        │
+│  ├── Auth   │  ├── Auth  │  ├── Auth │  ├── Auth           │
+│  ├── Resume │  ├── API   │  └── Role │  └── Error          │
+│  └── Chat   │  └── Chat  │           │                      │
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Backend API (Go/Gin)                    │
+├─────────────────────────────────────────────────────────────┤
+│  Controllers  │  Services    │  Middleware  │  Models       │
+│  ├── Auth     │  ├── OAuth   │  ├── Auth    │  ├── User    │
+│  ├── Resume   │  ├── JWT     │  ├── CORS    │  ├── Resume  │
+│  └── Chat     │  └── AI      │  └── Logger  │  └── Chat    │
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Data Layer (PostgreSQL)                   │
+├─────────────────────────────────────────────────────────────┤
+│  Tables        │  Indexes      │  Extensions               │
+│  ├── users     │  ├── Primary  │  ├── pgvector            │
+│  ├── resumes   │  ├── Foreign  │  └── uuid-ossp          │
+│  ├── messages  │  └── Vector   │                          │
+│  └── documents │               │                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Data Flow
+
+1. **Authentication Flow**
+   ```
+   User → Angular App → Google OAuth → Backend API → JWT Generation → Secured Access
+   ```
+
+2. **Resume Generation Flow**
+   ```
+   User Input → Chat Interface → AI Processing → Vector Storage → Resume Generation → PDF Export
+   ```
+
+3. **API Request Flow**
+   ```
+   Angular App → HTTP Request → Auth Interceptor → Backend API → Database → Response
+   ```
+
+### Security Architecture
+
+- **Authentication**: OAuth 2.0 with Google provider
+- **Authorization**: JWT tokens with role-based access control
+- **API Security**: 
+  - CORS configuration
+  - Rate limiting
+  - Request validation
+  - SQL injection prevention
+- **Data Security**:
+  - Encrypted passwords (bcrypt)
+  - Secure session management
+  - HTTPS enforcement in production
+
+### Deployment Architecture
+
+#### Development Environment
+```yaml
+Services:
+  - Frontend: http://localhost:3000 (Angular Dev Server)
+  - Backend: http://localhost:8080 (Go API)
+  - Database: localhost:5432 (PostgreSQL)
+```
+
+#### Production Environment
+```yaml
+Services:
+  - Frontend: Nginx serving static files
+  - Backend: Go binary with clustering
+  - Database: PostgreSQL with replication
+  - Load Balancer: Nginx/HAProxy
+  - SSL: Let's Encrypt certificates
+```
+
+### API Design Principles
+
+1. **RESTful Design**: Following REST conventions for resource management
+2. **Versioning**: API versioning through URL path (/api/v1)
+3. **Error Handling**: Consistent error response format
+4. **Documentation**: OpenAPI/Swagger specification
+5. **Rate Limiting**: Token bucket algorithm for API throttling
+
+### Database Schema
+
+Key tables and relationships:
+- **users**: OAuth profiles and authentication data
+- **resumes**: Resume metadata and content
+- **chat_messages**: Conversation history with embeddings
+- **documents**: Vector store for AI context retrieval
+
 ## 🚀 Getting Started
 
 ### Prerequisites
